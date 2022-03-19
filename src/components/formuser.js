@@ -1,75 +1,48 @@
-import { faker } from "@faker-js/faker";
-import axios from "axios";
-import { useState } from "react";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import FormUser from "./formuser";
+import React from "react";
+import { Formik } from "formik";
+import * as Yup from "yup";
 
-function AddUser() {
-  const [userAdd, setUserAdd] = useState({});
-  const handleClick = () => {
-    const firstName = faker.name.firstName();
-    const lastName = faker.name.lastName();
-    const date = faker.date.past(
-      50,
-      new Date("Sat Sep 20 1992 21:35:02 GMT+0200 (CEST)")
-    );
-
-    // random data
-    const name = faker.name.findName(firstName, lastName);
-    const email = faker.internet.email(firstName, lastName);
-    const username = faker.internet.userName(firstName, lastName);
-    const password = faker.internet.password();
-    const phone = faker.phone.phoneNumber();
-    const streetaddress = faker.address.streetAddress();
-    const state = faker.address.stateAbbr();
-    const citystatezip =
-      faker.address.city() + ", " + state + " " + faker.address.zipCode();
-
-    const latitude = faker.address.latitude();
-    const longitude = faker.address.longitude();
-    const avatar = faker.image.avatar();
-    const dob =
-      date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
-
-    // user object
-    const user = {
-      name,
-      dob,
-      email,
-      username,
-      password,
-      phone,
-      streetaddress,
-      state,
-      citystatezip,
-      latitude,
-      longitude,
-      avatar,
-    };
-    axios.post("http://3.83.121.236:9000/addUser", user);
-    setUserAdd(user);
-  };
+function FormUser() {
   return (
-    <>
-      <div className="container">
-        <div className="mt-5">
-          <button
-            className="btn btn-dark fw-bold border-primary border-1 rounded-3 py-2"
-            onClick={() => handleClick()}
-          >
-            Register Student Using Faker
-          </button>
-        </div>
-        <div className="mb-5 mt-1">
-          Student Added: <span className="fw-bold">{userAdd.name}</span>
-        </div>
-        <div className="fs-3 fw-blod mt-3">Student Information</div>
-        <div className="mb-3 text-danger">
-          *This form isn't working yet, it'll be ready very soon*
-        </div>
-        <FormUser />
-        {/* <form class="row g-3">
+    <Formik
+      initialValues={{
+        firstName: "",
+        lastName: "",
+        email: "",
+        acceptedTerms: false, // added for our checkbox
+        // jobType: "", // added for our select
+      }}
+      validationSchema={Yup.object({
+        firstName: Yup.string()
+          .max(15, "Must be 15 characters or less")
+          .required("Required"),
+        lastName: Yup.string()
+          .max(20, "Must be 20 characters or less")
+          .required("Required"),
+        email: Yup.string()
+          .email("Invalid email addresss")
+          .required("Required"),
+        acceptedTerms: Yup.boolean()
+          .required("Required")
+          .oneOf([true], "You must accept the terms and conditions."),
+        // jobType: Yup.string()
+        //   // specify the set of valid values for job type
+        //   // @see http://bit.ly/yup-mixed-oneOf
+        //   .oneOf(
+        //     ["designer", "development", "product", "other"],
+        //     "Invalid Job Type"
+        //   )
+        //   .required("Required"),
+      })}
+      onSubmit={(values, { setSubmitting }) => {
+        setTimeout(() => {
+          alert(JSON.stringify(values, null, 2));
+          setSubmitting(false);
+        }, 400);
+      }}
+    >
+      {(formik) => (
+        <form onSubmit={formik.handleSubmit} class="row g-3">
           <div class="col-md-4">
             <label for="validationDefault01" class="form-label">
               First name
@@ -77,22 +50,26 @@ function AddUser() {
             <input
               type="text"
               class="form-control"
-              id="validationDefault01"
-              value=""
-              required
+              id="firstName"
+              {...formik.getFieldProps("firstName")}
             />
+            {formik.touched.firstName && formik.errors.firstName ? (
+              <div className="error-style">{formik.errors.firstName}</div>
+            ) : null}
           </div>
           <div class="col-md-4">
-            <label for="validationDefault02" class="form-label">
+            <label htmlFor="lastName" class="form-label">
               Last name
             </label>
             <input
               type="text"
               class="form-control"
-              id="validationDefault02"
-              value=""
-              required
+              id="lastName"
+              {...formik.getFieldProps("lastName")}
             />
+            {formik.touched.lastName && formik.errors.lastName ? (
+              <div className="error-style">{formik.errors.lastName}</div>
+            ) : null}
           </div>
           <div class="col-md-4">
             <label for="validationDefaultUsername" class="form-label">
@@ -107,7 +84,7 @@ function AddUser() {
                 class="form-control"
                 id="validationDefaultUsername"
                 aria-describedby="inputGroupPrepend2"
-                required
+                // required
               />
             </div>
           </div>
@@ -119,7 +96,7 @@ function AddUser() {
               type="text"
               class="form-control"
               id="validationDefault03"
-              required
+              //   required
             />
           </div>
           <div class="col-md-3">
@@ -130,14 +107,14 @@ function AddUser() {
               type="text"
               class="form-control"
               id="validationDefault03"
-              required
+              //   required
             />
           </div>
           <div class="col-md-2">
             <label for="validationDefault04" class="form-label">
               State
             </label>
-            <select class="form-select" id="validationDefault04" required>
+            <select class="form-select" id="validationDefault04">
               <option selected disabled value="">
                 Choose...
               </option>
@@ -152,7 +129,7 @@ function AddUser() {
               type="text"
               class="form-control"
               id="validationDefault05"
-              required
+              //   required
             />
           </div>
           <div class="col-md-3">
@@ -163,7 +140,7 @@ function AddUser() {
               type="text"
               class="form-control"
               id="validationDefault03"
-              required
+              //   required
             />
           </div>
           <div class="col-md-3">
@@ -174,7 +151,7 @@ function AddUser() {
               type="text"
               class="form-control"
               id="validationDefault03"
-              required
+              //   required
             />
           </div>
           <div class="col-md-3">
@@ -182,11 +159,14 @@ function AddUser() {
               Email
             </label>
             <input
-              type="text"
+              id="email"
+              type="email"
               class="form-control"
-              id="validationDefault05"
-              required
+              {...formik.getFieldProps("email")}
             />
+            {formik.touched.email && formik.errors.email ? (
+              <div className="error-style">{formik.errors.email}</div>
+            ) : null}
           </div>
           <div class="col-md-3">
             <label for="validationDefault05" class="form-label">
@@ -196,7 +176,7 @@ function AddUser() {
               type="text"
               class="form-control"
               id="validationDefault05"
-              required
+              //   required
             />
           </div>
           <div class="col-12">
@@ -204,13 +184,16 @@ function AddUser() {
               <input
                 class="form-check-input"
                 type="checkbox"
-                value=""
-                id="invalidCheck2"
-                required
+                id="acceptedTerms"
+                {...formik.getFieldProps("acceptedTerms")}
               />
+
               <label class="form-check-label" for="invalidCheck2">
                 Agree to terms and conditions
               </label>
+              {formik.touched.acceptedTerms && formik.errors.acceptedTerms ? (
+                <div className="error-style">{formik.errors.acceptedTerms}</div>
+              ) : null}
             </div>
           </div>
           <div class="col-12">
@@ -221,10 +204,10 @@ function AddUser() {
               Submit form
             </button>
           </div>
-        </form> */}
-      </div>
-    </>
+        </form>
+      )}
+    </Formik>
   );
 }
 
-export default AddUser;
+export default FormUser;
