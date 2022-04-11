@@ -1,6 +1,67 @@
 import React from "react";
-import { Formik } from "formik";
+import { Formik, Form, Field, ErrorMessage, useField } from "formik";
 import * as Yup from "yup";
+import styled from "@emotion/styled";
+import {
+  CountryDropdown,
+  RegionDropdown,
+  CountryRegionData,
+} from "react-country-region-selector";
+import SelectUSState from "react-select-us-states";
+
+const MyTextInput = ({ label, ...props }) => {
+  // useField() returns [formik.getFieldProps(), formik.getFieldMeta()]
+  // which we can spread on <input> and alse replace ErrorMessage entirely.
+  const [field, meta] = useField(props);
+  return (
+    <>
+      <label htmlFor={props.id || props.name} className="form-label">
+        {label}
+      </label>
+      <input className="form-control" {...field} {...props} />
+      {meta.touched && meta.error ? (
+        <div className="error-style">{meta.error}</div>
+      ) : null}
+    </>
+  );
+};
+
+const MyCheckbox = ({ children, ...props }) => {
+  const [field, meta] = useField({ ...props, type: "checkbox" });
+  return (
+    <>
+      <label className="form-check-label">
+        <input
+          {...field}
+          {...props}
+          type="checkbox"
+          className="form-check-input"
+        />
+        {children}
+      </label>
+      {meta.touched && meta.error ? (
+        <div className="error-style">{meta.error}</div>
+      ) : null}
+    </>
+  );
+};
+
+const MySelect = ({ label, ...props }) => {
+  // useField() returns [formik.getFieldProps(), formik.getFieldMeta()]
+  // which we can spread on <input> and alse replace ErrorMessage entirely.
+  const [field, meta] = useField(props);
+  return (
+    <>
+      <label htmlFor={props.id || props.name} className="form-label">
+        {label}
+      </label>
+      <select {...field} {...props} className="form-select" />
+      {meta.touched && meta.error ? (
+        <div className="error-style">{meta.error}</div>
+      ) : null}
+    </>
+  );
+};
 
 function FormUser() {
   return (
@@ -8,7 +69,9 @@ function FormUser() {
       initialValues={{
         firstName: "",
         lastName: "",
+        userName: "",
         email: "",
+        stateName: "",
         acceptedTerms: false, // added for our checkbox
         // jobType: "", // added for our select
       }}
@@ -19,20 +82,23 @@ function FormUser() {
         lastName: Yup.string()
           .max(20, "Must be 20 characters or less")
           .required("Required"),
+        userName: Yup.string()
+          .max(20, "Must be 20 characters or less")
+          .required("Required"),
         email: Yup.string()
           .email("Invalid email addresss")
+          .required("Required"),
+        password: Yup.string()
+          .min(8, "Must be at least 8 characters long")
           .required("Required"),
         acceptedTerms: Yup.boolean()
           .required("Required")
           .oneOf([true], "You must accept the terms and conditions."),
-        // jobType: Yup.string()
-        //   // specify the set of valid values for job type
-        //   // @see http://bit.ly/yup-mixed-oneOf
-        //   .oneOf(
-        //     ["designer", "development", "product", "other"],
-        //     "Invalid Job Type"
-        //   )
-        //   .required("Required"),
+        stateName: Yup.string()
+          // specify the set of valid values for job type
+          // @see http://bit.ly/yup-mixed-oneOf
+          //   .oneOf(["FL", "MA", "AL", "TX"], "Invalid State")
+          .required("Required"),
       })}
       onSubmit={(values, { setSubmitting }) => {
         setTimeout(() => {
@@ -42,159 +108,63 @@ function FormUser() {
       }}
     >
       {(formik) => (
-        <form onSubmit={formik.handleSubmit} class="row g-3">
+        <Form class="row g-3" onSubmit={formik.handleSubmit}>
           <div class="col-md-4">
-            <label for="validationDefault01" class="form-label">
-              First name
-            </label>
-            <input
-              type="text"
-              class="form-control"
-              id="firstName"
-              {...formik.getFieldProps("firstName")}
-            />
-            {formik.touched.firstName && formik.errors.firstName ? (
-              <div className="error-style">{formik.errors.firstName}</div>
-            ) : null}
+            <MyTextInput label="First Name" name="firstName" type="text" />
           </div>
           <div class="col-md-4">
-            <label htmlFor="lastName" class="form-label">
-              Last name
-            </label>
-            <input
-              type="text"
-              class="form-control"
-              id="lastName"
-              {...formik.getFieldProps("lastName")}
-            />
-            {formik.touched.lastName && formik.errors.lastName ? (
-              <div className="error-style">{formik.errors.lastName}</div>
-            ) : null}
+            <MyTextInput label="Last Name" name="lastName" type="text" />
           </div>
           <div class="col-md-4">
-            <label for="validationDefaultUsername" class="form-label">
-              Username
-            </label>
-            <div class="input-group">
-              <span class="input-group-text" id="inputGroupPrepend2">
-                @
-              </span>
-              <input
-                type="text"
-                class="form-control"
-                id="validationDefaultUsername"
-                aria-describedby="inputGroupPrepend2"
-                // required
-              />
-            </div>
+            <MyTextInput label="Username" name="userName" type="text" />
           </div>
           <div class="col-md-5">
-            <label for="validationDefault03" class="form-label">
-              Street
-            </label>
-            <input
-              type="text"
-              class="form-control"
-              id="validationDefault03"
-              //   required
-            />
+            <MyTextInput label="Street Address" name="streetName" type="text" />
           </div>
           <div class="col-md-3">
-            <label for="validationDefault03" class="form-label">
-              City
-            </label>
-            <input
-              type="text"
-              class="form-control"
-              id="validationDefault03"
-              //   required
-            />
+            <MyTextInput label="City" name="cityName" type="text" />
           </div>
           <div class="col-md-2">
-            <label for="validationDefault04" class="form-label">
+            <MySelect label="State" name="stateName">
+              <option value="">Select a state</option>
+              <option value="FL">Florida</option>
+              <option value="MA">Massachusetts</option>
+              <option value="AL">Alabama</option>
+              <option value="TX">Texas</option>
+            </MySelect>
+            {/* <label htmlFor="state" className="form-label">
               State
             </label>
-            <select class="form-select" id="validationDefault04">
-              <option selected disabled value="">
-                Choose...
-              </option>
-              <option>...</option>
-            </select>
+
+            <SelectUSState
+              className="form-select"
+              id="stateName"
+              name="stateName"
+              type="text"
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.stateName}
+            /> */}
           </div>
           <div class="col-md-2">
-            <label for="validationDefault05" class="form-label">
-              Zip
-            </label>
-            <input
-              type="text"
-              class="form-control"
-              id="validationDefault05"
-              //   required
-            />
+            <MyTextInput label="Zip Code" name="zipCode" type="text" />
           </div>
           <div class="col-md-3">
-            <label for="validationDefault03" class="form-label">
-              Phone Number
-            </label>
-            <input
-              type="text"
-              class="form-control"
-              id="validationDefault03"
-              //   required
-            />
+            <MyTextInput label="Phone Number" name="phoneNumber" type="text" />
           </div>
           <div class="col-md-3">
-            <label for="validationDefault03" class="form-label">
-              Date of Birth
-            </label>
-            <input
-              type="text"
-              class="form-control"
-              id="validationDefault03"
-              //   required
-            />
+            <MyTextInput label="Date of Birth" name="dob" type="text" />
           </div>
           <div class="col-md-3">
-            <label for="validationDefault05" class="form-label">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              class="form-control"
-              {...formik.getFieldProps("email")}
-            />
-            {formik.touched.email && formik.errors.email ? (
-              <div className="error-style">{formik.errors.email}</div>
-            ) : null}
+            <MyTextInput label="Email" name="email" type="text" />
           </div>
           <div class="col-md-3">
-            <label for="validationDefault05" class="form-label">
-              Password
-            </label>
-            <input
-              type="text"
-              class="form-control"
-              id="validationDefault05"
-              //   required
-            />
+            <MyTextInput label="Password" name="password" type="text" />
           </div>
-          <div class="col-12">
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                id="acceptedTerms"
-                {...formik.getFieldProps("acceptedTerms")}
-              />
-
-              <label class="form-check-label" for="invalidCheck2">
-                Agree to terms and conditions
-              </label>
-              {formik.touched.acceptedTerms && formik.errors.acceptedTerms ? (
-                <div className="error-style">{formik.errors.acceptedTerms}</div>
-              ) : null}
-            </div>
+          <div class="col-md-12">
+            <MyCheckbox name="acceptedTerms">
+              <span className="ms-2">I accept the terms and conditions</span>
+            </MyCheckbox>
           </div>
           <div class="col-12">
             <button
@@ -204,7 +174,7 @@ function FormUser() {
               Submit form
             </button>
           </div>
-        </form>
+        </Form>
       )}
     </Formik>
   );
